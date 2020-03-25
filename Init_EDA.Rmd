@@ -1,0 +1,41 @@
+---
+title: "EDAFinalProject"
+author: "Nicholas Mobley"
+date: "3/25/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+```{r}
+#read csv file of cumalative cases from John Hopkins University
+ConfirmedCases = read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")
+
+#removed X from colnames
+colnames(ConfirmedCases) = str_replace(colnames(ConfirmedCases),"X","")
+
+# Summarize to the total by days (cummulative)
+Totals_Date = ConfirmedCases %>%
+    select(c(5:ncol(ConfirmedCases))) %>%
+    pivot_longer(cols = everything(), names_to = "Date",values_to = "Total") %>%
+    group_by(Date) %>%
+    summarize(Total = sum(Total))
+
+#Clean up the date column a little bit
+Totals_Date = Totals_Date %>%
+    mutate(
+        Date = as.Date(str_replace_all(Date,"\\.","/"),"%m/%d/%y")
+    )
+```
+
+Graphing the total Confrimed by date
+
+```{r}
+ggplot(Totals_Date, aes( x = Date, y = Total)) + geom_point() +
+    xlab("Cummalitive Total") + 
+    ggtitle("Total Confirmed Cases")
+```
+
