@@ -1,0 +1,102 @@
+---
+title: "SalaryStudy"
+author: "Nicholas Mobley"
+date: "4/6/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+library(tidyverse)
+library(gganimate)
+```
+
+```{r}
+import_sal <- function(filename) {
+    dataframe = read_excel(filename)
+    dataframe = dataframe %>%
+        mutate(
+            Class = replace_na(Class,"Other"),
+            Year = 2000 + as.numeric(str_sub(filename,4,5))
+        ) %>%
+        select(c(Class,Salary,Year))
+    return(dataframe)
+}
+```
+
+
+```{r}
+years = c("03",'04','05','06','07','08','09','10',
+          '11','12','13','14','15','16','17','18','19')
+
+filenames = sapply(years,sprintf,fmt = "Sal%s.xlsx")
+datasets = lapply(filenames,import_sal)
+all = bind_rows(datasets)
+```
+
+```{r}
+all = all %>%
+    mutate(
+        Class = as.factor(Class)
+    )
+
+summary = all %>%
+    group_by(Class,Year) %>%
+    summarize(medianSalary = median(Salary)/1000) %>%
+    filter(!(Class %in% c("Instructor","Affiliate Librarian")))
+```
+
+```{r}
+salary_gif = ggplot(summary, aes(
+    x = reorder(Class,medianSalary), y = medianSalary)) + 
+    geom_bar(stat = 'identity') + coord_flip() +
+    xlab("Posistion") +
+    ylab("Median Salary of Posistion (Thousands)") +
+    scale_y_continuous(breaks = seq(20,200,20)) +
+    transition_states(Year,
+                      transition_length = 2,
+                      state_length = .5) +
+    ggtitle("IU Bloomington Falculty Salary Through The Years",
+            subtitle = "Year {closest_state}")
+
+anim_save("IUSalary.gif",animation = salary_gif)
+```
+
+
+
+```{r}
+Sal19 = read_excel("Sal19.xlsx")
+Sal19 = Sal19 %>%
+    mutate(
+        Class = as.factor(replace_na(Class,"Other"))
+    )
+Sal03 = read_excel("Sal03.xlsx")
+Sal03 = Sal03 %>%
+    mutate(
+        Class = replace_na(Class,"Other")
+    )
+```
+
+```{r}
+Class = Sal19 %>%
+    group_by(Class) %>%
+    summarize(Avg = mean(Salary)) %>%
+    arrange(Avg)
+Class03 = Sal03 %>%
+    group_by(Class) %>%
+    summarize(Avg = mean(Salary)) %>%
+    arrange(Avg)
+```
+
+```{r}
+ggplot(Class, aes(x = reorder(Class,Avg), y =  Avg)) + 
+    geom_bar(stat = 'identity') + coord_flip() + ylab("Status") +
+    xlab("Average Salary")
+```
+
+```{r}
+ggplot(Class03, aes(x = reorder(Class,Avg), y = Avg)) + 
+    geom_bar(stat = 'identity') + coord_flip()
+```
+
