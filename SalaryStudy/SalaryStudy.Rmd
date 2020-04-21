@@ -12,28 +12,116 @@ library(tidyverse)
 library(gganimate)
 ```
 
-```{r}
+
+```{r import-functions}
+#FUNCTION TO FIX NAMES OF TEACHERS
+grade_to_salName <- function(name) {
+    tryCatch({
+    split = str_split(name, ",", simplify = T)
+    lastName = split[[1]]
+    firstName = split[[2]] %>%
+        str_split(" ",simplify = T) %>%
+        str_sub(1,1) %>%
+        str_c(collapse = "")
+    return(str_c(lastName,firstName,sep = ", "))},
+    error = function(e) print(name)
+    )
+}
+
+#FUNCTION TO IMPORT SALARIES
 import_sal <- function(filename) {
     dataframe = read_excel(filename)
     dataframe = dataframe %>%
         mutate(
             Class = replace_na(Class,"Other"),
-            Year = 2000 + as.numeric(str_sub(filename,4,5))
+            Year = 2000 + as.numeric(str_sub(filename,18,19)),
+            Class = as.factor(Class)
         ) %>%
-        select(c(Class,Salary,Year))
+        select(c(Name,Org,Class,Salary,Year))
+    return(dataframe)
+}
+
+filter_nonProf <- function(dataframe) {
+    dataframe %>%
+        filter(Class %in% c("Lecturer","Senior Lecturer",
+                            "Associate Professor","Assistant Professor",
+                            "Professor"))
+}
+
+
+#FUNCTION TO IMPORT GRADES
+import_grade <- function(filename) {
+    dataframe = read_csv(filename)
+    dataframe = dataframe %>%
+        select(`INSTRUCTOR NAME`, 
+                `AVG SECT GPA`,`GPA GRADES`)
+    dataframe = na.omit(dataframe) %>%
+        inner_join(dataframe %>%
+                       group_by(`INSTRUCTOR NAME`) %>%
+                       summarize(totalGPA = sum(`GPA GRADES`))) %>%
+        group_by(`INSTRUCTOR NAME`) %>%
+        summarize(
+            gpaAverage = sum(`AVG SECT GPA` * (`GPA GRADES`/totalGPA)),
+            nStudents = max(totalGPA),
+            year = 2000 + as.numeric(str_sub(filename,19,20))
+        ) %>%
+        transmute(
+            gpaAverage = gpaAverage,
+            nStudents = nStudents,
+            Year = year,
+            Name = sapply(`INSTRUCTOR NAME`,grade_to_salName,
+                          USE.NAMES = FALSE)
+        )
     return(dataframe)
 }
 ```
 
 
-```{r}
+```{r actual-importing, warning = FALSE,echo = FALSE, message = FALSE}
 years = c("03",'04','05','06','07','08','09','10',
-          '11','12','13','14','15','16','17','18','19')
+          '11','12','13','14','15','16','17','18')
+yearsWanted = 8:length(years)
+salFiles = sapply(years[yearsWanted],
+                  sprintf,fmt = "Data/Salaries/Sal%s.xlsx")
+salData = lapply(salFiles,import_sal)
+salData = lapply(salData,filter_nonProf)
 
-filenames = sapply(years,sprintf,fmt = "Sal%s.xlsx")
-datasets = lapply(filenames,import_sal)
-all = bind_rows(datasets)
+
+gradeFiles = sapply(years[yearsWanted],
+                    sprintf,fmt = "Data/Grades/Grades%s.csv")
+gradeData = lapply(gradeFiles,import_grade)
+
 ```
+
+```{r merging, warning = FALSE, message=FALSE}
+salAll = bind_rows(salData)
+gradeAll = bind_rows(gradeData)
+masterAll = inner_join(salAll,gradeAll, by = c("Name","Year"))
+```
+
+```{r}
+ggplot(masterAll, aes(y = Salary, x = gpaAverage,
+                      colour = Class)) + 
+    geom_point(alpha = .1) +
+    xlim(2,4) +
+    geom_smooth()
+```
+
+
+
+
+
+
+
+
+
+
+# OLD CODE DOESN'T WORK
+
+```{r}
+View(all)
+```
+
 
 ```{r}
 all = all %>%
@@ -99,4 +187,24 @@ ggplot(Class, aes(x = reorder(Class,Avg), y =  Avg)) +
 ggplot(Class03, aes(x = reorder(Class,Avg), y = Avg)) + 
     geom_bar(stat = 'identity') + coord_flip()
 ```
+
+```{r}
+Sal19 = read_excel("Sal19.xlsx")
+CSCI = Sal19 %>%
+    filter(Org == "CSCI") %>%
+    select(c(Name,Class,Salary))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
