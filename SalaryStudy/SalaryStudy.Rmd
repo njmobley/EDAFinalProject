@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(readxl)
 library(tidyverse)
 library(gganimate)
+library(scales)
 ```
 
 
@@ -51,14 +52,18 @@ filter_nonProf <- function(dataframe) {
 
 #FUNCTION TO IMPORT GRADES
 import_grade <- function(filename) {
+    #reads dataframe
     dataframe = read_csv(filename)
     dataframe = dataframe %>%
         select(`INSTRUCTOR NAME`, 
                 `AVG SECT GPA`,`GPA GRADES`)
+    
     dataframe = na.omit(dataframe) %>%
+        #inner_join with data frame that gives total for each instructor
         inner_join(dataframe %>%
                        group_by(`INSTRUCTOR NAME`) %>%
                        summarize(totalGPA = sum(`GPA GRADES`))) %>%
+        #group by name of instructor
         group_by(`INSTRUCTOR NAME`) %>%
         summarize(
             gpaAverage = sum(`AVG SECT GPA` * (`GPA GRADES`/totalGPA)),
@@ -100,18 +105,33 @@ masterAll = inner_join(salAll,gradeAll, by = c("Name","Year"))
 ```
 
 ```{r}
-ggplot(masterAll, aes(y = Salary, x = gpaAverage,
+ggplot(masterAll, aes(y = log(Salary), x = gpaAverage,
                       colour = Class)) + 
-    geom_point(alpha = .1) +
+    geom_point(alpha = .1)+
     xlim(2,4) +
-    geom_smooth()
+    geom_smooth() 
 ```
 
 
+```{r}
+ClassTotal = masterAll %>%
+    group_by(Class) %>%
+    summarize(departStudents = sum(nStudents))
+ClassGPA = inner_join(masterAll,ClassTotal) %>%
+    group_by(Class) %>%
+    summarize(
+        avgGPA = sum(gpaAverage * (nStudents/departStudents))
+    )
+```
 
+```{r}
+ggplot(ClassGPA, aes(x = Class)) + geom_col(aes(y=avgGPA)) + 
+    scale_y_continuous(limits = c(3,3.4), oob = rescale_none)
+```
 
+```{r}
 
-
+```
 
 
 
