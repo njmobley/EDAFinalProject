@@ -1,0 +1,91 @@
+---
+title: "Final Project"
+author: "Evelyn Delph"
+date: "4/21/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# library
+library(tidyverse)
+library(dplyr)
+library(viridis)
+library(broom)
+
+# read in data + edits
+df <- read.csv("master.csv")
+df <- filter(df,gpaAverage >= 2)
+df <- df %>%
+  mutate(
+    Class = recode_factor(Class,"Associate Professor" = "Assoc. Prof", "Assistant Professor" = "Asst. Prof")
+  )
+```
+
+## Introduction
+
+### Scope
+* Grade distribution data from 2010-2018
+* Professor salary data from 2010-2018
+* Using gpaAverages between 2.0-4.0
+* There are 13,065 rows of data
+
+## Part 1: Exploratory Data Analysis
+* First graph: Can we see a visible trend between gpa and salary over the 8 year span?
+* Second graph: Can we see a visible trend between gpa, salary, and number of students per class type?
+* Third graph: 
+
+
+```{r,echo=F}
+g1 <- df %>%
+  select(c(Salary,gpaAverage,Year,Class)) %>%
+  group_by(Year,Class) %>%
+  summarise(aveGPA=mean(gpaAverage),aveSalary=mean(Salary)) %>%
+  ggplot(aes(x=Year,y=aveGPA,color=aveSalary)) +
+  geom_smooth(method="lm",se=FALSE,color="black")  +
+  ggtitle("Increase in Salary and GPA Per Class Type") +
+  xlab("Year")  + 
+  ylab("Average GPA") + 
+  geom_point(size=2,alpha=.4) + 
+  facet_grid(~Class)  +
+  theme(axis.text.x = element_text(angle = 45)) +
+  labs(color = "Avg Salary") + 
+  scale_color_viridis_c() 
+
+g2 <- df %>%
+  group_by(Class,Year) %>%
+  summarise(aveGPA=mean(gpaAverage),aveStudents=mean(nStudents),aveSalary=mean(Salary)) %>%
+  ggplot(aes(x=aveGPA,y=aveStudents,color=aveSalary)) +
+  geom_smooth(method="lm",se=FALSE,color="black")  +
+  ggtitle("Relationship Between Average GPA & Number of Students Per Class Type") +
+  xlab("Average GPA")  + 
+  ylab("Average Number of Students") + 
+  geom_point(size=2,alpha=.4) + 
+  facet_grid(~Class)  +
+  theme(axis.text.x = element_text(angle = 45)) +
+  labs(color = "Avg Salary") + 
+  scale_color_viridis_c() 
+
+g1
+g2
+```
+```{r}
+df %>%
+  group_by(Class,Year,Org) %>%
+  summarise(aveGPA=mean(gpaAverage),aveSalary=mean(Salary)) %>%
+  ggplot(aes(x=aveGPA,y=aveSalary)) +
+  geom_point() +
+  facet_wrap(~Org)
+```
+Thomas...need help with codes
+```{r,echo=F}
+levels(unique(df$Org))
+```
+
+## Part 2: Models/Predictions
+
+
+## Part 3: Analysis + Conclusion
+```{r,echo=F}
+```
