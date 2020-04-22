@@ -1,0 +1,83 @@
+Dept,Description,Category
+SLST,Second Language Studies,Culture/Language
+PHIL,Philosophy,Art/Humanities
+MUS,Music,Art/Humanities
+CMLT,Comparative Literature,Art/Humanities
+LING,Linguistics,Art/Humanities
+AFRI,African Studies,Culture/Language
+TEL,TeleArt/Humanities,Art/Humanities
+INTL,International Studies,Language/Culture
+SPEA,School of Public Environmental Affairs,Business/SPEA
+NELC,Eastern Languages & Culture,Language/Culture
+BUS,Business,Business/SPEA
+EDUC,Education,Social Sciences
+AMID,Appearl Merchandising,Business/SPEA
+PSY,Psychology,Social Sciences
+SOC,Sociology,Social Sciences
+ECON,Economics,Social Sciences
+HIST,History,Social Sciences
+GNDR,Gender Studies,Art/Humanities
+ENG,English,Language/Culture
+NURS,Nursing,Sciences
+ANTH,Anthropology,Social Sciences
+CMCL,Art/Humanities & Culture,Art/Humanities
+BIOL,Biology,Sciences
+FRIT,French & Italian,Language/Culture
+HPER,School of Public Health,Social Sciences
+CHEM,Chemistry,Sciences
+AAAD,African Studies,Language/Culture
+COLL,College of Arts & Sciences,Social Sciences
+CLAS,Classical Studies,Social Sciences
+POLS,Political Science,Social Sciences
+HON,Honors,Other
+GEOG,Geography,Sciences
+GEOL,Earth and Atmospheric Studies,Sciences
+PHYS,Physics,Sciences
+CEUS,Central Eurasin Studies,Language/Culture
+CSCI,Computer Science,Math/Technology
+COGS,Cognitive Science,Social Sciences
+SLAV,Slav&East Euro Lang & Cultures,Language/Culture
+SPHS,Speech and Hearing Sciences,Language/Culture
+MATH,Math,Math/Technology
+HISP,Hispanic and Portegeuse,Language/Culture
+REL,Religious Studies,Language/Culture
+INFO,Informatics,Math/Technology
+FINA,Museum Art,Language/Culture
+LAMP,Liberal Arts & Management Program,Other
+VSCI,Vision Science,Sciences
+GER,Germanic Languages,Language/Culture
+JOUR,Journalism,Art/Humanities
+THTR,Theater,Art/Humanities
+FOLK,Folklore,Art/Humanities
+HPSC,History & Philosophy of Science & Medicine,Social Sciences
+CLLC,Collins Living Learning Center,Other
+AST,Astronomy,Sciences
+EALC,"East Asian, Language & Culture",Culture/Language
+LTAM,Latin American Studies,Culture/Language
+CJUS,Criminal Justice,Social Sciences
+PACE,Political & Civic Engagement Program,Other
+HUBI,Human Biology,Sciences
+AMST,American Studies,Language/Culture
+GLLC,Global Village Learning Center,Other
+INST,India Studies,Language/Culture
+AAST,Asian American Studies,Language/Culture
+JSTU,Jewish Studies,Language/Culture
+REEI,Russian & East European Studies,Language/Culture
+LATS,Latino Studies,Language/Culture
+MSCI,Medical Sciences,Sciences
+PHSL,Physiology,Sciences
+TOPT,Optemetric Technology,Sciences
+STAT,Statistics,Math/Technology
+MEST,Medieval Studies,Art/Humanities
+ANAT,Anatomy,Sciences
+WEUR,European Studies,Language/Culture
+SPH,Public Health,Business/SPEA
+BIOT,Biotechnology,Sciences
+ABEH,Animal Behavior,Social Sciences
+MSCH,Media School,Art/Humanities
+ASCS,Arts & Sciences Career Services,Other
+SOAD,School of Art & Design,Art/Humanities
+ARTH,Art History,Art/Humanities
+ENGR,Engineering,Math/Technology
+SEAS,Southeast Asian Studies,Language/Culture
+EAS,Earth and Atmospheric Sciences,Sciences
