@@ -161,14 +161,85 @@ g4
 
 ```
 
-Thomas...need help with codes
-```{r,echo=F}
-levels(unique(df$Org))
+## Part 2: Models/Predictions
+```{r building-model}
+library(mgcv)
+gam.1 = gam(Salary ~ gpaAverage + Class + Year + nStudents + Category, data = df)
+gam.1.df = augment(gam.1)
+
+head(gam.1.df)
+ggplot(data = gam.1.df, aes(x = .fitted, y = Salary, color = Class)) + geom_point() + ggtitle("Response vs. Fitted")
+ggplot(data = gam.1.df, aes(x = .resid)) + geom_histogram()
+
+summary(gam.1)
+
+#pairs(df)
 ```
 
-## Part 2: Models/Predictions
+```{r}
+ggplot(data = df, aes(y = Salary, x = gpaAverage)) + geom_point() + geom_smooth() + facet_wrap(~ Level)
+```
+
+```{r}
+gam.3 <- gam(Salary ~ as.factor(Category) + as.factor(Class) + nStudents + gpaAverage + as.factor(Year) + as.factor(Level), data = df)
+
+gam.3.df = augment(gam.3)
+
+head(gam.3.df)
+ggplot(data = gam.3.df, aes(x = .fitted, y = Salary)) + geom_point() + ggtitle("Response vs. Fitted")
+ggplot(data = gam.3.df, aes(x = .resid)) + geom_histogram()
+
+summary(gam.3)
+```
+
+```{r}
+gam.4 <- gam(Salary ~ as.factor(Category) + as.factor(Class) + s(nStudents,gpaAverage) + as.factor(Year) + as.factor(Level), data = df)
+
+gam.4.df = augment(gam.4)
+
+head(gam.4.df)
+ggplot(data = gam.4.df, aes(x = .fitted, y = Salary)) + geom_point() + ggtitle("Response vs. Fitted")
+ggplot(data = gam.4.df, aes(x = .resid)) + geom_histogram()
+
+summary(gam.4)
+```
+
+
+
+```{r}
+library(MASS)
+rlm.1 <- rlm(Salary ~ as.factor(Category) + as.factor(Class) + nStudents + gpaAverage + as.factor(Year) + as.factor(Level), data = df)
+
+rlm.1.df = augment(rlm.1)
+
+ggplot(data = rlm.1.df, aes(x = .fitted, y = Salary)) + geom_point() + ggtitle("Response vs. Fitted")
+ggplot(data = rlm.1.df, aes(x = .resid)) + geom_histogram()
+
+summary(rlm.1)
+```
+
+
 
 
 ## Part 3: Analysis + Conclusion
 ```{r,echo=F}
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
