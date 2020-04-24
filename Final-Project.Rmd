@@ -1,0 +1,332 @@
+---
+title: "Final Project"
+author: "Evelyn Delph, Thomas Janes, & Nick Mobley"
+date: "4/21/2020"
+output: pdf_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# library
+library(tidyverse)
+library(viridis)
+library(broom)
+library(MASS)
+library(mgcv)
+library(GGally)
+
+# read in data + edits
+df <- read.csv("master_file.csv")
+depts <- read.csv("dept.csv")
+df <- df %>%
+  filter(gpaAverage >= 2) %>%
+  filter(Course < 400) %>%
+  mutate(
+    Class = recode_factor(Class,"Associate Professor" = "Assoc. Prof", "Assistant Professor" = "Asst. Prof"),
+    Level = round(Course,digits=-2)
+  ) %>%
+  filter(Level > 0) %>%
+  inner_join(depts) %>% 
+  dplyr::select(c(Name,Category,Class,nStudents,Salary,Year,gpaAverage,Level))
+cb_palette = c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+```
+# Introduction
+
+## Abstract
+Are undergraduate students receiving the upmost quality of education from there professors at Indiana University? Since instate students pay \$10,948 for tuition and out of state students pay \$36,512, it is important to determine if such expenditures are worth the cost. For the purposes of this report, we are examining if an instructors' grade distrubition for undergraduate courses is indicative instructors' salaries. For this study, the quality of education that an instructor provides is determined by their average GPA. We are interested in studying grade distrubtion and salary across other variables including: the department, the course level, the instructors' level of teaching, and the year. The goals of this report aim to answer the following questions:
+
+* Does GPA impact an instructor's salary?
+* Do GPA and salary relationships vary across course levels?
+* Do GPA and salary relationships vary across years?
+* Do GPA and salary relationships vary across different departments?
+
+We will answer these questions with numerous EDA techniques to study the relationships among these variables. We aim to achieve a better understanding if the quality of education impacts instructors' salaries.
+
+## Description of Data
+Our master data file consists of 9 grade distribution and 9 salary files from the IU Registrar between the years 2010-2018. The datasets were joined by the instructor. The variables of interest pulled from these datasets include: Name of Instructor, Department, Instructor Level, Salary, Year, Average GPA, Number of Students, and Course Level.
+```
+DESCRIPTION
+Total Rows: 15,163
+Total Columns: 7
+1. Name of Instructor: 1,942 unique instructors (string)
+2. Departments: 100 departments at IU categorized into 8 groups (string)
+3. Instructor Level: The title of an instructor (string)
+4. Salary: The annual salary of a professor (integer)
+5. Average GPA: Average GPA grouped by course and instructor, between 2.0-4.0 (double)
+6. Number of Students: Number of students grouped by course and instructor (integer)
+7. Course Level: Denotes 100, 200, 300, and 400 level classes (integer)
+```
+Below are four graphics to better visualize and understand some of the variables of interest.
+```{r,echo=F,fig.show = "hold",warning=F,out.width = "50%"}
+ggplot(df,aes(x=log(Salary),fill=Class,color=Class)) +
+  geom_density() + 
+  facet_grid(~Class) +
+  scale_color_manual(values=cb_palette) + 
+  scale_fill_manual(values=cb_palette) + 
+  theme(legend.position = "None",axis.text.x = element_text(angle = 45)) +
+  ggtitle("Distribution of Salary Per Instructor Level")
+  
+ggplot(df,aes(x=gpaAverage,fill=Class)) + 
+  stat_density() +
+  scale_fill_viridis_d()  +
+  ggtitle("Distribution of Average GPA Per Instructor Level") +
+  xlab("GPA") + 
+  labs(fill = "Level")
+
+qplot(df$Level,stat="count",fill=df$Class,binwidth=40) +
+  ggtitle("Instructor Breakdown by Course Levels") +
+  xlab("Course Level") + 
+  ylab("counts") + 
+  scale_fill_viridis_d() +
+  labs(fill = "Level")
+
+ggplot(df,aes(x=Class,fill=Category)) + 
+ stat_count() +
+ scale_fill_manual(values=cb_palette) + 
+ ggtitle("Breakdown of Departments and Instructor Type") +
+ labs(fill = "Departments") +
+ xlab("Instructor Level")
+```
+Based on these simple visualizations, from our data we learn that professors will have the highest log salaries with lecturers earning the least. Associate and assistant professor appear to have a similar mean, as well as senior lecturers and lecturers. The density plot indicates that average GPA across all instructor levels center close to 3.5. This may indicate that average GPA and instructor level do not significantly impact one another. The breakdown instructor level breakdown by course level shows there's more instructors in 300 level courses and the least in 400 level courses. It will be interesting to see if outcomes in 300 level courses are much different from the others due to the volume in instructors. The last visualization shows the breakdown of instructor levels against various departments. There does not appear to be a disinct pattern in instructor level against departments.
+
+The next step is to take a deeper dive analyzing the interactions of these variables with more robust visualizations.
+
+# Exploratory Data Analysis
+
+The next visualizations show the relationships be log of salaries and GPA over the number of students taught by instructor. The purpose of these visualizations is to determine if there is a visible relationship between salaries, GPA, and the number of students taught.
+
+```{r,echo=F,fig.show = "hold",warning=F,out.width = "100%",fig.align="center",fig.width=10}
+g1 <- df %>%
+  group_by(Class,Year,Category,Level) %>%
+  summarize(aveGPA=mean(gpaAverage),aveSalary=mean(Salary),sumStudents=sum(nStudents)) %>%
+  ggplot(aes(x=aveGPA,y=log(aveSalary),color=sumStudents)) + 
+  geom_point(size=2) +
+  scale_color_viridis_c() +
+  geom_smooth(method="rlm",se=FALSE,color="black") +
+  ggtitle("Relationship Between GPA and Log of Salary and Number of Students") +
+  xlab("GPA") +
+  ylab("Log Salary") +
+  facet_wrap(~Year)
+g1
+```
+If there was a relationship present, we'd see the colors go in a specific direction. In this case, we do not see any indication that the number of students an instructor taught impacts the relationship between salary and gpa. The next visualizations show the relationships be log of salaries and GPA over instructor level, department, and year.  
+
+```{r,echo=F,fig.show = "hold",warning=F,out.width = "100%",fig.align="center",fig.width=10}
+g2 <- df %>%
+  group_by(Year) %>%
+  summarise(aveGPA=mean(gpaAverage),aveSalary=mean(Salary)) %>%
+  ggplot(aes(x=aveGPA,y=log(aveSalary),color=Year)) + 
+  geom_point(size=2) +
+  scale_color_viridis_c() +
+  geom_smooth(method="rlm",se=FALSE,color="black") +
+  ggtitle("Relationship Between GPA and Log of Salary in Years") +
+  xlab("GPA") +
+  ylab("Log Salary")
+g2 
+```
+
+This first graphic looks at log of salary and average GPA over through 2010-2018. It appears that at a high level GPA and salary increased. It will be more beneficial to analyze other interest variables to determine the importance of year. Year alone cannot adequately determine if this increase in salary is related to increase in GPA. The next visualization also factors in instructor level for a deeper understanding of these relationships.
+
+```{r,echo=F,fig.show = "hold",warning=F,out.width = "100%",fig.align="center",fig.width=10}
+g3 <- df %>%
+  dplyr::select(c(Salary,gpaAverage,Year,Class)) %>%
+  group_by(Year,Class) %>%
+  summarise(aveGPA=mean(gpaAverage),aveSalary=mean(log(Salary))) %>%
+  ggplot(aes(x=Year,y=aveGPA,color=aveSalary)) +
+  geom_smooth(method="rlm",se=FALSE,color="black")  +
+    ggtitle("Relationship Between Salary and GPA per Instructor Level") +
+    xlab("Year")  + 
+    ylab("Average GPA") + 
+    geom_point(size=2,alpha=.7) + 
+    facet_grid(~Class)  +
+    theme(axis.text.x = element_text(angle = 45)) +
+    labs(color = "Salary") + 
+    scale_color_viridis_c() 
+g3
+```
+
+This shows the relationship between average GPA and salary over the nine year period by instructor level. We also learn that average GPA increased throughout the years per instructor level. By examining salary on a log scale (the color) and average GPA (y-axis), there appears to be a positive relationship between them. For associate and assistant professors and senior lecturers, the color becomes lighter as it progresses throughout the year, indicating an increase in salary. Professors and lecturers appear to have some relationship with GPA and salary, but not as much compared to the other instructor levels. This could indicate a relationship between GPA and salaries. 
+
+```{r,echo=F,fig.show = "hold",warning=F,out.width = "100%",fig.align="center",fig.width=10}
+g4 <- df %>%
+  dplyr::select(c(Salary,gpaAverage,Year,Class,Level)) %>%
+  group_by(Level,Class,Year) %>%
+  summarise(aveGPA=mean(gpaAverage),aveSalary=mean(Salary)) %>%
+  ggplot(aes(x=aveGPA,y=log(aveSalary),color=Class)) +
+    geom_point(alpha=.5,size=2) +
+    geom_smooth(method="rlm",se=FALSE) +
+    scale_color_viridis_d() + 
+    ggtitle("Log Salary Over GPA By Course Level") +
+    xlab("GPA") +
+    ylab("Log Salary") +
+  facet_grid(~Level)
+g4
+```
+
+This shows the log salary over average GPA by course level and instructor type over the nine year period. There is one exception with lecturer in the 100 level course having a negative slope, but that is most likely due to the outlier. Overall this could point to salary and GPA being postively correlated to eachother. Although it helps to see the breakdown among course levels, it appears that the trend between salary and average GPA is consistent. 
+
+
+```{r,echo=F,fig.show = "hold",warning=F,out.width = "100%",fig.align="center",fig.width=10}
+g5 <- df %>%
+  dplyr::select(c(Salary,gpaAverage,Category,Year,Class,Level)) %>%
+  group_by(Category,Year,Class,Level) %>%
+  summarise(aveGPA=mean(gpaAverage),aveSalary=mean(Salary)) %>%
+  ggplot(aes(x=aveGPA,y=log(aveSalary),color=Class)) +
+    geom_point(alpha=.3) +
+    geom_smooth(method="rlm",se=FALSE) +
+    scale_color_viridis_d() + 
+    ggtitle("Log Salary Over GPA By Department Level") +
+    xlab("GPA") +
+    ylab("Log Salary") + 
+    facet_wrap(~Category)
+g5
+```
+
+This shows the log salary over average GPA by department and instructor type over the nine year period. Most of the instructor types over the nine years show a slight positive relationship between the average GPA and salary. Social sciences is the anomaly where there's a handful of negative slopes. This could mean there were more newer lecturers or senior lecturers starting in later years who had higher grade distributions. But in general, when breaking up GPA and salary by department, we continue to see positive relationships between GPA and salary.
+
+After examining these four visualizations, we can see that year, department, course level, and instructor level may impact the relationship between GPA and Salary. The next step is to construct predictive models to see which variables best predict salary.
+
+# Model
+
+To model the relationship between salary and our feature variables of interest, a generalized additive model (GAM) was fitted on the data. 
+First, five gam models were constructed consisting of one variable and Salary as the predictor to calculate the explained variance. This determined feature importance.
+
+```{r,echo=F,fig.show = "hold",warning=F,out.width = "100%",fig.align="center",fig.width=10}
+gam1.df1 <- augment(gam(Salary ~ gpaAverage, data = df))
+gam1.df2 <- augment(gam(Salary ~ Level, data = df))
+gam1.df3 <- augment(gam(Salary ~ Year, data = df))
+gam1.df4 <- augment(gam(Salary ~ Class, data = df))
+gam1.df5 <- augment(gam(Salary ~ Category, data = df))
+gam1.df6 <- augment(gam(Salary ~ nStudents, data = df))
+
+r1 <- var(gam1.df1$.fitted)/var(gam1.df1$Salary)
+r2 <- var(gam1.df2$.fitted)/var(gam1.df2$Salary)
+r3 <- var(gam1.df3$.fitted)/var(gam1.df3$Salary)
+r4 <- var(gam1.df4$.fitted)/var(gam1.df4$Salary)
+r5 <- var(gam1.df5$.fitted)/var(gam1.df5$Salary)
+r6 <- var(gam1.df6$.fitted)/var(gam1.df6$Salary)
+
+vars <- c("GPA","Course Level","Year","Instructor Level","Department","Number of Students")
+explained.var <- c(r1,r2,r3,r4,r5,r6)
+explained.var.df <- data.frame(vars,explained.var)
+
+ggplot(explained.var.df,aes(x=reorder(vars,explained.var),y=explained.var,color=vars)) +
+  geom_point(size=2) +
+  scale_color_viridis_d() +
+  ggtitle("Explained Variance Per Variable") +
+  xlab("Variable") +
+  ylab("Explained Variance") +
+  theme(legend.position = "None")
+```
+This shows the explained variance across single variable gam models. This shows the level of variance each variable captures when predicting salary. The single variable gam models indicate that the order of most important variables for predicting salary are instructor level, department, course level, GPA, and year. With regards to salary, on its own, GPA plays an insignificant role. Even though GPA on its own cannot predict or explain salary, it can be incorporated into a multi-variable gam model to optimize predictions. The next step is to incrementally add variables into the gam model and evaluate the results to determine the best model. The variables will be added in descending order of explained variance. Due the number of students being 0, we omitted this variable from the gam models.
+
+```{r,echo=F}
+gam2.df <- augment(gam(Salary ~ Class + Category, data = df))
+gam3.df <- augment(gam(Salary ~ Class + Category + Level, data = df))
+gam4.df <- augment(gam(Salary ~ Class + Category + Level + gpaAverage, data = df))
+gam5.df <- augment(gam(Salary ~ Class + Category + Level + gpaAverage, data = df))
+
+r2 <- var(gam2.df$.fitted)/var(gam2.df$Salary)
+r3 <- var(gam3.df$.fitted)/var(gam3.df$Salary)
+r4 <- var(gam4.df$.fitted)/var(gam4.df$Salary)
+r5 <- var(gam5.df$.fitted)/var(gam5.df$Salary)
+```
+
+```{r,echo=F,fig.show = "hold",warning=F,out.width = "100%",fig.align="center",fig.width=10}
+gams <- c("Gam 2","Gam 3","Gam 4","Gam 5")
+explained.var <- c(r2,r3,r4,r5)
+explained.var.df.gam <- data.frame(gams,explained.var)
+
+ggplot(explained.var.df.gam,aes(x=gams,y=explained.var,color=gams)) +
+  geom_point(size=2) +
+  scale_color_viridis_d() +
+  ggtitle("Explained Variance Per Gam Model") +
+  xlab("Gam Model") +
+  ylab("Explained Variance") +
+  theme(legend.position = "None")
+```
+
+It appears that the explained variance stops increasing when the top four variables (instructor level, department level, course level, and GPA) are included. Year makes little to no impact on the model. This means the model captures the most variance with these four variables. GPA led to an increase in explained variance compared to the gam models excluding it (models 2 and 3). The next step is to examine the fitted residuals over salary to see if the fit becomes smoother while adding more variables.
+
+```{r,echo=F,fig.show = "hold",warning=F,out.width = "50%"}
+gg.gam2 <- 
+  ggplot(data = gam2.df, aes(x = .fitted, y = Salary)) + 
+  geom_point() + 
+  ggtitle("Gam 2: Response vs. Fitted") + 
+  geom_smooth(method = "loess")
+
+gg.gam3 <- 
+  ggplot(data = gam3.df, aes(x = .fitted, y = Salary)) + 
+  geom_point() + 
+  ggtitle("Gam 3: Response vs. Fitted") + 
+  geom_smooth(method = "loess")
+
+gg.gam4 <- 
+  ggplot(data = gam4.df, aes(x = .fitted, y = Salary)) + 
+  geom_point() + 
+  ggtitle("Gam 4: Response vs. Fitted") + 
+  geom_smooth(method = "loess")
+
+gg.gam5 <- 
+  ggplot(data = gam5.df, aes(x = .fitted, y = Salary)) + 
+  geom_point() + 
+  ggtitle("Gam 5: Response vs. Fitted") + 
+  geom_smooth(method = "loess")
+
+gg.gam2
+gg.gam3
+gg.gam4
+gg.gam5
+```
+There's a noticeable difference between gam models 2 and 4. It appears the residuals become smoother when adding variables. Similar to the explained variance visualization across the four multi-variable gam models, there doesn't appear to be a distinct difference between models with 4 and 5 variables. Finally, we will examine the distribution of residuals among the four multi-variable gam models.
+
+```{r,echo=F,fig.show = "hold",warning=F,out.width = "50%"}
+gam2 <- ggplot(data = gam2.df, aes(x = .resid)) + geom_histogram(binwidth = 40) + ggtitle("Gam 2: Residuals")
+gam3 <- ggplot(data = gam3.df, aes(x = .resid)) + geom_histogram(binwidth = 40) + ggtitle("Gam 3: Residuals")
+gam4 <- ggplot(data = gam4.df, aes(x = .resid)) + geom_histogram(binwidth = 40) + ggtitle("Gam 4: Residuals")
+gam5 <- ggplot(data = gam5.df, aes(x = .resid)) + geom_histogram(binwidth = 40) + ggtitle("Gam 5: Residuals")
+
+gam2
+gam3
+gam4
+gam5
+```
+Gam models 4 and 5 converge to a normal distribution compared to models 2 and 3. It appears that the gam models with 4 and 5 variables that include GPA will lead to more accurate salary predictions.
+
+# Conclusion
+
+After this analysis, we hoped to answer whether or not GPA impacts salaries for instructors. Although our gam models improved after including average GPA, there were more important factors that contributed. Of course, we expected salary to vary across instructor level. However, we wanted to know if there was more that could impact salary. Our analysis revealed that salaries varied across departments and schools. Salaries also could have varied due to the course levels. GPA seemed to have little impact compared to the other variables we considered.
+
+We wanted to answer whether or not students were getting quality education with respect to GPA and professors. For the purposes of this research we defined high quality education to be directly linked with GPA. This research did not include other campus resources like libraries, labs, and educational aid into consideration when factoring the quality of education. Essentially, examining GPA and salaries might not be enough to answer this question. More factors like the ones stated need to be taken into consideration. 
+
+Further and more refined research can help answer the question of quality education. For IU, analyzing quality of professor and education should occur at the department level. What's considered a high GPA varies across disciplines. Next, the services each department and college provides for undergraduates must be taken into consideration. Our research only scratches the surface when trying to answer this question.
+
+```{r,echo=F}
+g1 <- ggplot(df,aes(x=gpaAverage,fill=Class)) + 
+  stat_density() +
+  scale_fill_viridis_d() +
+  ggtitle("Distribution of Average GPA Per Class")
+
+g2 <- df %>%
+  group_by(Class) %>%
+  ggplot(aes(x=gpaAverage,y=Salary,color=Class)) +
+  geom_point(alpha=.1) + 
+  geom_smooth(se=FALSE) +
+  xlab("GPA") +
+  ylab("Salary") +
+  ggtitle("Average GPA and Average Salary Per Class Type")
+
+g3 <- df %>%
+  group_by(Class,Year) %>%
+  ggplot(aes(x=gpaAverage,y=Salary,color=Class)) +
+  geom_point(alpha=.1) + 
+  geom_smooth(se=FALSE) +
+  xlab("GPA") +
+  ylab("Salary") +
+  ggtitle("Average GPA and Average Salary Per Class Type") +
+  facet_wrap(~Year)
+  
+#g1
+#g2
+#g3
+```
