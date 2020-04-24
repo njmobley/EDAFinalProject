@@ -1,7 +1,7 @@
 ---
 title: "Final Project"
-author: "Evelyn Delph, Thomas James, & Nick Mobley"
-date: "4/21/2020"
+author: "Evelyn Delph, Arthur Janes, & Nick Mobley"
+date: "4/24/2020"
 output: pdf_document
 ---
 ```{r setup, include=FALSE}
@@ -87,13 +87,13 @@ ggplot(df,aes(x=Class,fill=Category)) +
  labs(fill = "Departments") +
  xlab("Instructor Level")
 ```
-Based on these simple visualizations, from our data we learn that professors will have the highest log salaries with lecturers earning the least. Associate and assistant professor appear to have a similar mean, as well as senior lecturers and lecturers. The density plot indicates that average GPA across all instructor levels center close to 3.5. This may indicate that average GPA and instructor level do not significantly impact one another. The breakdown instructor level breakdown by course level shows there's more instructors in 300 level courses and the least in 400 level courses. It will be interesting to see if outcomes in 300 level courses are much different from the others due to the volume in instructors. The last visualization shows the breakdown of instructor levels against various departments. There does not appear to be a disinct pattern in instructor level against departments.
+Based on these simple visualizations, from our data we learn that professors have the highest log salaries with lecturers earning the least. Associate and assistant professor appear to have a similar mean, as well as senior lecturers and lecturers. The density plot indicates that average GPA across all instructor levels centers close to 3.5. This may indicate that average GPA and instructor level do not significantly impact one another. The instructor level breakdown by course level shows there's more instructors in 300 level courses and the least in 400 level courses. It will be interesting to see if outcomes in 300 level courses are much different from the others due to the volume of instructors. The last visualization shows the breakdown of instructor levels against various departments. There does not appear to be a disinct pattern in instructor level against departments.
 
 The next step is to take a deeper dive analyzing the interactions of these variables with more robust visualizations.
 
 # Exploratory Data Analysis
 
-The next visualizations show the relationships be log of salaries and GPA over instructor level, department, and year. The purpose of these visualizations is to determine if there is a visible relationship between salaries and GPA.
+The next visualizations show the relationships between log of salaries and GPA over instructor level, department, and year. The purpose of these visualizations is to determine if there is a visible relationship between salaries and GPA.
 
 ```{r,echo=F,fig.show = "hold",warning=F,out.width = "100%",fig.align="center",fig.width=10}
 g1 <- df %>%
@@ -109,7 +109,7 @@ g1 <- df %>%
 g1 
 ```
 
-This first graphic looks at log of salary and average GPA over through 2010-2018. It appears that at a high level GPA and salary increased. It will be more beneficial to analyze other interest variables to determine the importance of year. Year alone cannot adequately determine if this increase in salary is related to increase in GPA. The next visualization also factors in instructor level for a deeper understanding of these relationships.
+This first graphic looks at log of salary and average GPA over through 2010-2018. It appears that salary increases at higher levels of GPA. It will be more beneficial to analyze other interest variables to determine the importance of year. Year alone cannot adequately determine if this increase in salary is related to increase in GPA. The next visualization also factors in instructor level for a deeper understanding of these relationships.
 
 ```{r,echo=F,fig.show = "hold",warning=F,out.width = "100%",fig.align="center",fig.width=10}
 g2 <- df %>%
@@ -129,7 +129,7 @@ g2 <- df %>%
 g2
 ```
 
-This shows the relationship between average GPA and salary over the nine year period by instructor level. We also learn that average GPA increased throughout the years per instructor level. By examining salary on a log scale (the color) and average GPA (y-axis), there appears to be a positive relationship between them. For associate and assistant professors and senior lecturers, the color becomes lighter as it progresses throughout the year, indicating an increase in salary. Professors and lecturers appear to have some relationship with GPA and salary, but not as much compared to the other instructor levels. This could indicate a relationship between GPA and salaries. 
+This shows the relationship between average GPA and salary over the nine year period by instructor level. We also learn that average GPA increased throughout the years for each instructor level. By examining salary on a log scale (the color) and average GPA (y-axis), there appears to be a positive relationship between them. For associate and assistant professors and senior lecturers, the color becomes lighter as it progresses throughout the year, indicating an increase in salary. Professors and lecturers appear to have some relationship with GPA and salary, but not as much compared to the other instructor levels. This could be indicative of a relationship between GPA and salaries. 
 
 ```{r,echo=F,fig.show = "hold",warning=F,out.width = "100%",fig.align="center",fig.width=10}
 g3 <- df %>%
@@ -159,7 +159,7 @@ g4 <- df %>%
     geom_point(alpha=.3) +
     geom_smooth(method="rlm",se=FALSE) +
     scale_color_viridis_d() + 
-    ggtitle("Log Salary Over GPA By Department Level") +
+    ggtitle("Log Salary Over GPA By Department") +
     xlab("GPA") +
     ylab("Log Salary") + 
     facet_wrap(~Category)
@@ -173,7 +173,7 @@ After examining these four visualizations, we can see that year, department, cou
 # Model
 
 To model the relationship between salary and our feature variables of interest, a generalized additive model (GAM) was fitted on the data. 
-First, five gam models were constructed consisting of one variable and Salary as the predictor to calculate the explained variance. This determined feature importance.
+First, five GAM's were constructed consisting of one variable and Salary as the predictor to calculate the explained variance. This determined feature importance.
 
 ```{r,echo=F,fig.show = "hold",warning=F,out.width = "100%",fig.align="center",fig.width=10}
 gam1.df1 <- augment(gam(Salary ~ gpaAverage, data = df))
@@ -200,7 +200,7 @@ ggplot(explained.var.df,aes(x=reorder(vars,explained.var),y=explained.var,color=
   ylab("Explained Variance") +
   theme(legend.position = "None")
 ```
-This shows the explained variance across single variable gam models. This shows the level of variance each variable captures when predicting salary. The single variable gam models indicate that the order of most important variables for predicting salary are instructor level, department, course level, GPA, and year. With regards to salary, on its own, GPA plays an insignificant role. Even though GPA on its own cannot predict or explain salary, it can be incorporated into a multi-variable gam model to optimize predictions. The next step is to incrementally add variables into the gam model and evaluate the results to determine the best model. The variables will be added in descending order of explained variance.
+This shows the explained variance across single variable GAM's. This shows the level of variance each variable captures when predicting salary. The single variable GAM's indicate that the order of most important variables for predicting salary are instructor level, department, course level, GPA, and year (from most to least influential). With regards to salary, on its own, GPA plays an insignificant role. Even though GPA on its own cannot predict or explain salary, it can be incorporated into a multi-variable gam model to optimize predictions. The next step is to incrementally add variables into the GAM and evaluate the results to determine the best model. The variables will be added in descending order of explained variance.
 
 ```{r,echo=F}
 gam2.df <- augment(gam(Salary ~ Class + Category, data = df))
