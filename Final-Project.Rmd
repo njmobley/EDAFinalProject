@@ -293,6 +293,37 @@ gam5
 ```
 Gam models 4 and 5 converge to a normal distribution compared to models 2 and 3. It appears that the gam models with 4 and 5 variables that include GPA will lead to more accurate salary predictions.
 
+# Visualizing gam model better 
+
+MORE WORK NEED TO BE DONE HERE!
+```{r,echo=F}
+g4 <- gam(Salary ~ Class + Category + Level + gpaAverage, data = df)
+predictions <- predict.gam(g4,newdata = df) 
+df$preds <- as.vector(predictions)
+```
+
+## A Closer Look at Number of Student and Year Variables
+
+After determining the optimal model did not include number of students and that year explained little variation, we wanted to speculate more closely. We examined the number of students over department and year as well as department, number of students, and GPA over year. We wanted to see if more students were switching to departments with higher GPAs and if there was a decrease in enrollment in more difficult disciplines. If this was the case, it may explain why year and number of students did not impact salary, but showed significant in previous graphs.
+
+```{r,echo=F,fig.show = "hold",warning=F,fig.width=10}
+df %>%
+  dplyr::select(Category,Year,nStudents,gpaAverage) %>%
+  group_by(Category,Year) %>%
+  summarise(sumStudents = sum(nStudents),GPA = mean(gpaAverage)) %>%
+  ggplot(aes(x=Year,y=sumStudents,color=GPA)) +
+  geom_point(size=2) +
+  geom_line() +
+  scale_color_viridis_c() +
+  ggtitle("Number of Students Versus GPA") +
+  ylab("Number of Students") +
+  xlab("Year") +
+  facet_wrap(~Category,ncol=2)
+```
+This shows the trends in number of students and GPA throughout the departments over the nine yaer period. Here, we see that departments like SPEA/Business and Arts/Humanities increase in enrollment and GPA. Fields like Sciences and Social Sciences go back and forth increasing and decreasing in enrollment and the GPA slightly increases. Language/Culture and Math/Technology increase in enrollement but GPA does not change.
+
+This reveals year and number of students could have been important when factoring GPA and salaries if we were only considering business and SPEA courses. Year and number of students probably explained little variance because this trend was not present among the other six categories.
+
 # Conclusion
 
 After this analysis, we hoped to answer whether or not GPA impacts salaries for instructors. Although our gam models improved after including average GPA, there were more important factors that contributed. Of course, we expected salary to vary across instructor level. However, we wanted to know if there was more that could impact salary. Our analysis revealed that salaries varied across departments and schools. Salaries also could have varied due to the course levels. GPA seemed to have little impact compared to the other variables we considered.
