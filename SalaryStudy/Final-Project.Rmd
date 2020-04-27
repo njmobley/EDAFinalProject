@@ -275,6 +275,12 @@ gam5
 ```
 Gam models 4 and 5 converge to a normal distribution compared to models 2 and 3. It appears that the gam models with 4 and 5 variables that include GPA will lead to more accurate salary predictions.
 
+```{r visualizing-the-model, echo = F}
+ggplot(data = gam4.df, aes(x = gpaAverage, y = .fitted, color = Class)) + geom_point() + scale_color_viridis_d() + geom_jitter() + ggtitle("Fitted vs. GPA")
+```
+Based on this graph, it would seem our model predicts that as the average GPA of a course increases, the instructor's salaray actually decreases. However, average GPA is not the only variable determining this trend, or even the most influential. The course's department, level, and level of instructor all explain variation in the salaray of a course's instructor. 
+
+
 # Conclusion
 
 After this analysis, we hoped to answer whether or not GPA impacts salaries for instructors. Although our gam models improved after including average GPA, there were more important factors that contributed. Of course, we expected salary to vary across instructor level. However, we wanted to know if there was more that could impact salary. Our analysis revealed that salaries varied across departments and schools. Salaries also could have varied due to the course levels. GPA seemed to have little impact compared to the other variables we considered.
