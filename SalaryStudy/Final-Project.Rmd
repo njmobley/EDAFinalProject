@@ -6,7 +6,8 @@ output: pdf_document
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
+knitr::opts_chunk$set(cache = TRUE)
+knitr::opts_chunk$set(autodep = TRUE)
 # library
 library(tidyverse)
 library(viridis)
@@ -250,7 +251,7 @@ ggplot(explained.var.df.gam,aes(x=gams,y=explained.var,color=gams)) +
 
 It appears that the explained variance stops increasing when the top four variables (instructor level, department level, course level, and GPA) are included. Year makes little to no impact on the model. This means the model captures the most variance with these four variables. GPA led to an increase in explained variance compared to the gam models excluding it (models 2 and 3). The next step is to examine the fitted residuals over salary to see if the fit becomes smoother while adding more variables.
 
-```{r,echo=F,fig.show = "hold",warning=F,out.width = "50%"}
+```{r,echo=F,fig.show = "hold",warning=F,out.width = "50%",fig.height= 6}
 gg.gam2 <- 
   ggplot(data = gam2.df, aes(x = .fitted, y = Salary)) + 
   geom_point() + 
@@ -276,11 +277,12 @@ gg.gam5 <-
   geom_smooth(method = "loess")
 
 gg.gam2
-gg.gam3
+#gg.gam3
 gg.gam4
-gg.gam5
+#gg.gam5
 ```
-There's a noticeable difference between gam models 2 and 4. It appears the residuals become smoother when adding variables. Similar to the explained variance visualization across the four multi-variable gam models, there doesn't appear to be a distinct difference between models with 4 and 5 variables. 
+
+There's a noticeable difference between gam models 2 and 4. It appears the residuals become smoother when adding variables. Similar to the explained variance visualization across the four multi-variable gam models, when we added a fifth variable there wasn't a distinct difference between the two models (Gam 5 omitted). 
 
 ## A Closer Look at Gam Model with Four Variables
 
@@ -291,7 +293,7 @@ sorted.df <- gam4.df[order(gam4.df$Level,gam4.df$gpaAverage),]
 sorted.df$preds <- as.vector(predictions)
 ```
 
-```{r visualizing-the-model, echo = F,fig.show = "hold",warning=F,out.width = "100%",fig.align="center",fig.width=10,fig.height=10}
+```{r visualizing-the-model, echo = F,fig.show = "hold",warning=F,out.width = "100%",fig.align="center",fig.width=11,fig.height=11}
 #sort predictions and do geom line, sort in gpa (lowest to highest)
 #then geom_line()
 #plot predicted actual salaries (not log salaries)

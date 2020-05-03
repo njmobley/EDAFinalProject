@@ -1,0 +1,17 @@
+unnamed-chunk-1	$	~	aes	Category	cb_palette	Class	df	element_text	facet_grid	geom_density	ggplot	ggtitle	gpaAverage	labs	qplot	Salary	scale_color_manual	scale_fill_manual	scale_fill_viridis_d	stat_count	stat_density	theme	xlab	ylab
+unnamed-chunk-2	%>%	~	aes	aveGPA	aveSalary	Category	Class	df	facet_wrap	geom_point	geom_smooth	ggplot	ggtitle	gpaAverage	group_by	Level	mean	nStudents	Salary	scale_color_viridis_c	sum	summarize	sumStudents	xlab	Year	ylab
+unnamed-chunk-3	%>%	aes	aveGPA	aveSalary	df	geom_point	geom_smooth	ggplot	ggtitle	gpaAverage	group_by	mean	Salary	scale_color_viridis_c	summarise	xlab	Year	ylab
+unnamed-chunk-4	%>%	::	~	aes	aveGPA	aveSalary	c	Class	df	element_text	facet_grid	geom_point	geom_smooth	ggplot	ggtitle	gpaAverage	group_by	labs	mean	Salary	scale_color_viridis_c	summarise	theme	xlab	Year	ylab
+unnamed-chunk-5	%>%	::	~	aes	aveGPA	aveSalary	c	Class	df	facet_grid	geom_point	geom_smooth	ggplot	ggtitle	gpaAverage	group_by	Level	mean	Salary	scale_color_viridis_d	summarise	xlab	Year	ylab
+unnamed-chunk-6	%>%	::	~	aes	aveGPA	aveSalary	c	Category	Class	df	facet_wrap	geom_point	geom_smooth	ggplot	ggtitle	gpaAverage	group_by	Level	mean	Salary	scale_color_viridis_d	summarise	xlab	Year	ylab
+unnamed-chunk-7	$	~	aes	augment	c	data.frame	df	gam	geom_point	ggplot	ggtitle	reorder	scale_color_viridis_d	theme	var	xlab	ylab
+unnamed-chunk-8	$	~	augment	df	gam	var
+unnamed-chunk-9	aes	c	data.frame	geom_point	ggplot	ggtitle	r2	r3	r4	r5	scale_color_viridis_d	theme	xlab	ylab
+unnamed-chunk-10	.fitted	aes	gam2.df	gam3.df	gam4.df	gam5.df	geom_point	geom_smooth	ggplot	ggtitle	Salary
+unnamed-chunk-11	$	$<-	::	~	as.vector	df	gam4.df	order	predict.gam
+visualizing-the-model	.fitted	~	aes	Class	exp	facet_wrap	geom_line	geom_smooth	ggplot	ggtitle	gpaAverage	scale_color_viridis_d	sorted.df
+unnamed-chunk-12	%>%	::	~	aes	as.vector	c	Category	Class	data.frame	facet_wrap	g4	geom_line	ggplot	ggtitle	gpaAverage	group_by	Level	mean	nStudents	predict.gam	Salary	scale_color_viridis_c	summarise	xlab	Year	ylab
+unnamed-chunk-13	~	aes	agg.preds	Class	facet_wrap	geom_line	ggplot	ggtitle	gpaAverage	salary.preds	scale_color_viridis_c	xlab	ylab
+unnamed-chunk-14	~	aes	agg.preds	c	facet_wrap	geom_smooth	ggplot	ggtitle	labs	Level	real.salary	salary.preds	scale_color_manual	ylab
+unnamed-chunk-15	%>%	::	~	aes	Category	df	facet_wrap	geom_line	geom_point	ggplot	ggtitle	GPA	gpaAverage	group_by	mean	nStudents	scale_color_viridis_c	sum	summarise	sumStudents	xlab	Year	ylab
+unnamed-chunk-16	%>%	~	aes	Class	df	facet_wrap	geom_point	geom_smooth	ggplot	ggtitle	gpaAverage	group_by	Salary	scale_fill_viridis_d	stat_density	xlab	Year	ylab
