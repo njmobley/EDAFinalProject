@@ -1,0 +1,59 @@
+---
+title: "Executive Summary"
+author: "Evelyn Delph, Arthur Janes, and Nick Mobley"
+date: "5/3/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# library
+library(tidyverse)
+library(viridis)
+library(broom)
+library(MASS)
+library(mgcv)
+library(GGally)
+library(gam)
+
+# read in data + edits
+df <- read.csv("master_file.csv")
+depts <- read.csv("dept.csv")
+df <- df %>%
+  filter(gpaAverage >= 2) %>%
+  filter(Course < 400) %>%
+  mutate(
+    Class = recode_factor(Class,"Associate Professor" = "Assoc. Prof", "Assistant Professor" = "Asst. Prof"),
+    Level = round(Course,digits=-2),
+    Salary = log(Salary)
+  ) %>%
+  filter(Level > 0) %>%
+  inner_join(depts) %>% 
+  dplyr::select(c(Name,Category,Class,nStudents,Salary,Year,gpaAverage,Level))
+cb_palette = c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7") 
+
+```
+
+College can be one of the most expensive purchases of a person’s life, so it is important that students are getting a good education. With this idea in mind, the goal of this report was to examine the relationship between instructors’ grade distributions for undergraduate courses and their salaries at Indiana University. For the purpose of this study, we are using an instructor’s mean grade point average (GPA) for each class as a measure of how well the students are learning. Specifically, we asked if GPA impacts an instructor’s salary, if GPA and salary relationships vary across course levels, if GPA and salary relationships vary across years, and if GPA and salary relationships vary across different departments.
+
+Our data consisted of 15,163 observations and seven variables: name of instructor, department, instructor level, salary, average GPA, number of students, and course level. We found that the best model for predicting an instructor’s salary included only instructor level, department, course level, and GPA. We then discovered that GPA seemed to explain little of the variation in salary, but instructor level seemed to be the most influential. While this is not surprising, we wanted to consider the influence of other factors on an instructor’s salary. Year proved to have little to no affect on the relationship, but course level and department were impactful. While GPA and salary are likely not sufficient measures of a university’s education quality or use of funds, it is interesting that GPA seems to play so little a role in an instructor’s salary.
+
+```{r,echo=F,warning=F}
+gam4.df <- augment(gam(Salary ~ Class + Category + Level + gpaAverage, data = df))
+g4 <- mgcv::gam(Salary ~ Class + Category + Level + gpaAverage, data = df)
+predictions <- predict.gam(g4,newdata = df) 
+sorted.df <- gam4.df[order(gam4.df$Level,gam4.df$gpaAverage),]
+sorted.df$preds <- as.vector(predictions)
+```
+
+```{r visualizing-the-model, echo = F,fig.show = "hold",warning=F,out.width = "100%",fig.align="center",fig.width=10,fig.height=6}
+#sort predictions and do geom line, sort in gpa (lowest to highest)
+#then geom_line()
+#plot predicted actual salaries (not log salaries)
+ggplot(data = sorted.df, aes(x = gpaAverage, y = exp(.fitted), color = Class)) + 
+  geom_smooth(se=FALSE,method="gam") + 
+  geom_line() +
+  scale_color_viridis_d() + 
+  ggtitle("Fitted vs. GPA") +
+  facet_wrap(~Category+Level,ncol=6)
+```
