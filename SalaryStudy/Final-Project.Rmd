@@ -36,7 +36,7 @@ cb_palette = c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
 # Introduction
 
 ## Abstract
-Are undergraduate students receiving the upmost quality of education from there professors at Indiana University? Since instate students pay \$10,948 for tuition and out of state students pay \$36,512, it is important to determine if such expenditures are worth the cost. For the purposes of this report, we are examining if an instructors' grade distrubition for undergraduate courses is indicative instructors' salaries. For this study, the quality of education that an instructor provides is determined by their average GPA. We are interested in studying grade distrubtion and salary across other variables including: the department, the course level, the instructors' level of teaching, and the year. The goals of this report aim to answer the following questions:
+Are undergraduate students receiving the upmost quality of education from their professors at Indiana University? Since instate students pay \$10,948 for tuition and out of state students pay \$36,512, it is important to determine if such expenditures are worth the cost. For the purposes of this report, we are examining if an instructors' grade distrubition for undergraduate courses is indicative of instructors' salaries. For this study, the quality of education that an instructor provides is determined by their average GPA. We are interested in studying grade distrubtion and salary across other variables including: the department, the course level, the instructors' level of teaching, and the year. The goals of this report aim to answer the following questions:
 
 * Does GPA impact an instructor's salary?
 * Do GPA and salary relationships vary across course levels?
@@ -46,7 +46,7 @@ Are undergraduate students receiving the upmost quality of education from there 
 We will answer these questions with numerous EDA techniques to study the relationships among these variables. We aim to achieve a better understanding if the quality of education impacts instructors' salaries.
 
 ## Description of Data
-Our master data file consists of 9 grade distribution and 9 salary files from the IU Registrar between the years 2010-2018. The datasets were joined by the instructor. The variables of interest pulled from these datasets include: Name of Instructor, Department, Instructor Level, Salary, Year, Average GPA, Number of Students, and Course Level.
+Our master data file consists of 9 grade distribution and 9 salary files from the IU Registrar between the years 2010-2018. The datasets were joined by the instructor's name. The variables of interest pulled from the datasets include: Name of Instructor, Department, Instructor Level, Salary, Year, Average GPA, Number of Students, and Course Level.
 ```
 DESCRIPTION
 Total Rows: 15,163
@@ -67,7 +67,8 @@ ggplot(df,aes(x=Salary,fill=Class,color=Class)) +
   scale_color_manual(values=cb_palette) + 
   scale_fill_manual(values=cb_palette) + 
   theme(legend.position = "None",axis.text.x = element_text(angle = 45)) +
-  ggtitle("Distribution of Salary Per Instructor Level")
+  ggtitle("Distribution of Salary Per Instructor Level") +
+  xlab("Salary (log USD)")
   
 ggplot(df,aes(x=gpaAverage,fill=Class)) + 
   stat_density() +
@@ -90,13 +91,14 @@ ggplot(df,aes(x=Class,fill=Category)) +
  labs(fill = "Departments") +
  xlab("Instructor Level")
 ```
-Based on these simple visualizations, from our data we learn that professors will have the highest log salaries with lecturers earning the least. Associate and assistant professor appear to have a similar mean, as well as senior lecturers and lecturers. The density plot indicates that average GPA across all instructor levels center close to 3.5. This may indicate that average GPA and instructor level do not significantly impact one another. The breakdown instructor level breakdown by course level shows there's more instructors in 300 level courses and the least in 400 level courses. It will be interesting to see if outcomes in 300 level courses are much different from the others due to the volume in instructors. The last visualization shows the breakdown of instructor levels against various departments. There does not appear to be a disinct pattern in instructor level against departments.
+
+Based on these simple visualizations, from our data we learn that professors will have the highest log salaries with lecturers earning the least. Associate and assistant professor appear to have a similar mean, as well as senior lecturers and lecturers. The density plot indicates that average GPA across all instructor levels center close to 3.5. This may indicate that average GPA and instructor level do not significantly impact one another. The breakdown of instructor level by course level shows there's more instructors in 300 level courses and the least in 400 level courses. It will be interesting to see if outcomes in 300 level courses are much different from the others due to the volume in instructors. The last visualization shows the breakdown of instructor levels against various departments. There does not appear to be a disinct pattern in instructor level against departments.
 
 The next step is to take a deeper dive analyzing the interactions of these variables with more robust visualizations.
 
 # Exploratory Data Analysis
 
-The next visualizations show the relationships be log of salaries and GPA over the number of students taught by instructor. The purpose of these visualizations is to determine if there is a visible relationship between salaries, GPA, and the number of students taught.
+The next visualizations show the relationships of salaries and GPA over the number of students taught by instructor. The purpose of these visualizations is to determine if there is a visible relationship between salaries, GPA, and the number of students taught.
 
 ```{r,echo=F,fig.show = "hold",warning=F,out.width = "100%",fig.align="center",fig.width=10}
 g1 <- df %>%
@@ -112,6 +114,7 @@ g1 <- df %>%
   facet_wrap(~Year)
 g1
 ```
+
 If there was a relationship present, we'd see the colors go in a specific direction. In this case, we do not see any indication that the number of students an instructor taught impacts the relationship between salary and gpa. The next visualizations show the relationships be log of salaries and GPA over instructor level, department, and year.  
 
 ```{r,echo=F,fig.show = "hold",warning=F,out.width = "100%",fig.align="center",fig.width=10}
